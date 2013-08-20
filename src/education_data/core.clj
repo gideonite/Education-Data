@@ -91,18 +91,19 @@
             ;; compute a big mean across all grades and all years
             (mean (map (keyword "Mean Scale Score") (second group)))]))
     (map #(vector (dbn->schoolcode (first %)) (second %)))
-    (map #(zipmap [school-code :math_test_score] %))))
+    (map #(zipmap [school-code  ;; no longer dbn
+                   :math_test_score] %))))
 
-(defn join-some-data []
-  (write-data-as-json
-    (dirty-join school-code
-                (pupil-teacher-ratio-2010-11)
-                (school-reports-2010-11)
-                (math-test-2006-11))
-    (str "web/json/"
-         "pupil-teacher" "_"
-         "school-report" "_"
-         "math-test.json")))
+(defn some-joined-data []
+  (dirty-join school-code
+              (pupil-teacher-ratio-2010-11)
+              (school-reports-2010-11)
+              (math-test-2006-11)))
 
 ;; fire away
-;; (join-some-data)
+;; (write-data-as-json
+;;   (some-joined-data)
+;;   (str "web/json/"
+;;        "pupil-teacher" "_"
+;;        "school-report" "_"
+;;        "math-test.json"))

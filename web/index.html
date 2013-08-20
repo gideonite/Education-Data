@@ -14,8 +14,21 @@
 <style type="text/css">
     path {
         fill: none;
-        stroke: #ccc;
         stroke-opacity: .4;
+        shape-rendering: crispEdges;
+    }
+
+    .brooklyn {
+        stroke: #000;
+    }
+
+    .not-brooklyn {
+        stroke: #ccc;
+    }
+
+    .axis line, .axis path {
+        fill: none;
+        stroke: #000;
         shape-rendering: crispEdges;
     }
 </style>
@@ -31,11 +44,18 @@
 <body>
 
     <div class="container">
-        <h1>Parallel Coordinates</h1>
-        <h2>Overall School Evaluation | Student:Teacher Ratio |  NYS Math Test Scores | School Level</h2>
+        <h1>NYC Public School Data</h1>
 
+        <h2>Parallel Coordinates</h2>
+        <div id="parallel-coordinates"></div>
+        <p>Black : Brooklyn, Grey: All Other Boroughs </p>
+
+        <h2>Map of Brooklyn?</h2>
     </div>
-    <div id="parallel-coordinates"></div>
+
+    <!--
+    <h2>Overall School Evaluation | Student:Teacher Ratio |  NYS Math Test Scores | School Level (Elementary, HS, ...)</h2>
+    -->
 
 </body>
 </html>
