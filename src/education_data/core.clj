@@ -100,6 +100,18 @@
               (school-reports-2010-11)
               (math-test-2006-11)))
 
+;; load up the data
+(def data
+  {:some-joined-data (some-joined-data)})
+
+(view
+  (dataset
+    (->>
+      data
+      (first)
+      (keys))
+    data))
+
 ;; fire away
 ;; (write-data-as-json
 ;;   (some-joined-data)

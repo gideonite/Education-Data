@@ -12,18 +12,24 @@
 <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0-rc2/css/bootstrap-glyphicons.css" rel="stylesheet">
 -->
 <style type="text/css">
-    path {
+
+    .brush .extent {
+        fill-opacity: .3;
+        stroke: #fff;
+        shape-rendering: crispEdges;
+    }
+
+    .background path {
         fill: none;
+        stroke: #ccc;
         stroke-opacity: .4;
         shape-rendering: crispEdges;
     }
 
-    .brooklyn {
-        stroke: #000;
-    }
-
-    .not-brooklyn {
-        stroke: #ccc;
+    .foreground path {
+        fill: none;
+        stroke: steelblue;
+        stroke-opacity: .7;
     }
 
     .axis line, .axis path {
@@ -48,14 +54,9 @@
 
         <h2>Parallel Coordinates</h2>
         <div id="parallel-coordinates"></div>
-        <p>Black : Brooklyn, Grey: All Other Boroughs </p>
 
-        <h2>Map of Brooklyn?</h2>
+        <h2>Link to Map of Brooklyn?</h2>
     </div>
-
-    <!--
-    <h2>Overall School Evaluation | Student:Teacher Ratio |  NYS Math Test Scores | School Level (Elementary, HS, ...)</h2>
-    -->
 
 </body>
 </html>
