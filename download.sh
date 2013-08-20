@@ -63,6 +63,16 @@ function school_reports_2010_11() {
     rename_csv_download school_reports_2010_11.csv
 }
 
+function school_point_locations() {
+    wget 'https://data.cityofnewyork.us/download/jfju-ynrr/application/zip'
+    mv -v zip data/school_point_locations.esri
+}
+
+function school_safety_reports() {
+    wget 'https://data.cityofnewyork.us/Education/School-Safety-Report/qybk-bjjc'
+    rename_csv_download school_safety_reports.csv
+}
+
 # exec all
 class_size
 #wifi_locations
