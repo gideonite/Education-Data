@@ -9,4 +9,5 @@
                                 org.clojure/clojure
                                 org.clojure/clojure-contrib]]
                  [org.clojure/data.json "0.2.2" ]]
-  :main education-data.core)
+  :main education-data.core
+  :jvm-opts  ["-Xmx3G"])

@@ -69,15 +69,19 @@ function school_point_locations() {
 }
 
 function school_safety_reports() {
-    wget 'https://data.cityofnewyork.us/Education/School-Safety-Report/qybk-bjjc'
+    wget 'https://data.cityofnewyork.us/api/views/qybk-bjjc/rows.csv?accessType=DOWNLOAD'
     rename_csv_download school_safety_reports.csv
 }
 
 # exec all
-class_size
 #wifi_locations
 #nyc_jobs
-math_test_results_2006_11
-graduation_outcomes
-enrollment_statistics_2010_11
-school_demographics_and_accountability_2006_12
+#class_size
+#math_test_results_2006_11
+#graduation_outcomes
+#enrollment_statistics_2010_11
+#school_demographics_and_accountability_2006_12
+school_safety_reports
+
+# check out survey data here:
+# http://schools.nyc.gov/Accountability/tools/survey/default.htm
