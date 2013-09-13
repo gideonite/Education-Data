@@ -77,6 +77,21 @@
           (non-blank-column-names)
           (map #(vector (keyword %) (clean-survey-question %))))))
 
+(defn threshold-number [n]
+  "converts numbers from an average value for a survey question into the
+  textual value"
+  (cond
+    (=  n "N/A") "Does Not Apply"
+    (>= n 7.5)   "Strongly Agree"
+    (>= n 5)     "Agree"
+    (>= n 2.5)   "Disagree"
+    (>= n 0)     "Strongly Disagree"))
+
+(defn thresholder-by-key [k]
+  "takes a key and returns a function that thresholds that key"
+  (fn [d]
+   (assoc d k (threshold-number (k d)))))
+
 (defn munge-survey-data [survey-dataset]
   (let [old-new-colnames (clean-survey-questions (:column-names survey-dataset))]
     (->> (:rows survey-dataset)
@@ -141,37 +156,48 @@
 
 (def parent-score
   (memoize
-    (fn [] (munge-survey-data (my-read-dataset "data/surveys/2013/parent_score.csv")))))
+    (fn [] (->> (my-read-dataset "data/surveys/2013/parent_score.csv")
+             (munge-survey-data)
+             (project-by [(keyword feel-welcome)])
+             (map (thresholder-by-key (keyword feel-welcome)))))))
 
 (def student-score
   (memoize
-    (fn [] (munge-survey-data (my-read-dataset "data/surveys/2013/student_score.csv")))))
+    (fn [] (->> (my-read-dataset "data/surveys/2013/student_score.csv")
+             (munge-survey-data)
+             (project-by [(keyword continue-education)])
+             (map (thresholder-by-key (keyword continue-education)))))))
 
 (def teacher-score
   (memoize
-    (fn [] (munge-survey-data (my-read-dataset "data/surveys/2013/teacher_score.csv")))))
+    (fn [] (->> (my-read-dataset "data/surveys/2013/teacher_score.csv")
+             (munge-survey-data)
+             (project-by [(keyword feedback)])
+             (map (thresholder-by-key (keyword feedback)))))))
 
 (def organizational-data
   (memoize
     (fn []
       (->> (:rows (my-read-dataset "data/organizational_data/organizational_data.csv"))
         (map #(clojure.set/rename-keys % {(keyword "Location Code") dbn}))
-        (map #(select-keys % [ (keyword "Zip")
+        (standardize)
+        (map #(select-keys % [(keyword "Zip")
                               (keyword "Fax Number")
                               (keyword "City")
-                              (keyword "DBN")
+                              school-code
                               (keyword "Open Date")
                               (keyword "Location Name")
                               (keyword "Primary Address")
                               (keyword "Principal Name")
                               (keyword "Principal Title")]))))))
 
+;; main
 (defn write-all-to-json []
-  (for [data-path [[(organizational-data) "web/json/organizational-data.json"]
-                   [(project-by [(keyword feel-welcome)] (parent-score)) "web/json/parent-score.json"]
-                   [(project-by [(keyword continue-education)] (student-score)) "web/json/student-score.json"]
-                   [(project-by [(keyword feedback)] (teacher-score)) "web/json/teacher-score.json"]
-                   [(organizational-data) "web/json/organizational-data.json"]
+  (for [data-path [[(organizational-data)   "web/json/organizational-data.json"]
+                   [(parent-score)          "web/json/parent-score.json"]
+                   [(student-score)         "web/json/student-score.json"]
+                   [(teacher-score)         "web/json/teacher-score.json"]
+                   [(organizational-data)   "web/json/organizational-data.json"]
                    [(school-safety-reports) "web/json/school-safety-reports.json"]
                    ]]
     (write-data-as-json
