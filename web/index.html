@@ -52,11 +52,54 @@
     <div class="container">
         <h1>NYC Public School Data</h1>
 
-        <h2>Parallel Coordinates</h2>
-        <div id="parallel-coordinates"></div>
+        <h2>Survey Questions</h2>
 
-        <h2>Link to Map of Brooklyn?</h2>
+        <select id="selector">
+            <option value="feel-welcome">My child's school makes me feel welcome.</option>
+            <option value="helpful-feedback">School leaders give me regular and helpful feedback about my teaching.</option>
+            <option value="continue-education">Most of the teaching staff at my school expect me to continue my education after high school.</option>
+        </select>
+
+        <div id="survey-questions"></div>
+        <script type="text/javascript" src="js/barchart.js"></script>
     </div>
 
+<script type="text/javascript">
+
+    var Data = {};
+
+    function get_parent_score() {
+        $.get("json/parent-score.json", function(data) {
+            Data["feel-welcome"] = data;
+        })
+    }
+
+    function get_student_score() {
+        $.get("json/student-score.json", function(data) {
+            Data["continue-education"] = data;
+        })
+    }
+
+    function get_teacher_score() {
+        $.get("json/teacher-score.json", function(data) {
+            Data["helpful-feedback"] = data;
+        })
+    }
+
+    var $container = $('.container');
+
+    $container.hide();
+    $.when(get_parent_score(), get_student_score(), get_teacher_score()).done(
+        $container.show()
+        );
+
+    $selector = $("#selector");
+    var question_el = document.getElementById('survey-questions');
+    $selector.change(function() {
+            question_el.innerHTML = "";         // reset
+            Barchart(Data[$selector.val()], question_el);
+    });
+
+</script>
 </body>
 </html>

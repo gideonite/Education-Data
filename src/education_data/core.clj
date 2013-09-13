@@ -92,11 +92,40 @@
   (fn [d]
    (assoc d k (threshold-number (k d)))))
 
+(defn breakup-question-map [d]
+  "takes a data record d from a survey and returns a seq of hashmaps with keys
+  {:question :value :SCHOOL-CODE} which corresponds to making each question key
+  the value of :question, taking the corresponding value a putting it as the
+  value of :value and keeping the school-code.
+  -----------------------------------------
+  signature: hash-map -> (seq of hash-maps)
+  "
+
+  (let [questions
+        (filter #(and (not= school-code %) (not= (keyword "School Type") %))
+                (keys d))]
+    (map #(hash-map
+            :question %
+            :value (d %)
+            school-code (d school-code))
+         questions)))
+
 (defn munge-survey-data [survey-dataset]
   (let [old-new-colnames (clean-survey-questions (:column-names survey-dataset))]
     (->> (:rows survey-dataset)
       (map #(clojure.set/rename-keys % old-new-colnames))
-      (standardize))))
+      (standardize)
+      (map breakup-question-map)
+      (flatten)
+      )))
+
+(defn demapify [k]
+  (fn [d]
+    (let [v (d k)]
+      (dissoc
+        (assoc d
+             :question (name k)
+             :value v) k))))
 
 ;; ----------------------------------------------
 ;; munge away
@@ -157,23 +186,23 @@
 (def parent-score
   (memoize
     (fn [] (->> (my-read-dataset "data/surveys/2013/parent_score.csv")
-             (munge-survey-data)
-             (project-by [(keyword feel-welcome)])
-             (map (thresholder-by-key (keyword feel-welcome)))))))
+             (munge-survey-data)))))
 
 (def student-score
   (memoize
     (fn [] (->> (my-read-dataset "data/surveys/2013/student_score.csv")
              (munge-survey-data)
              (project-by [(keyword continue-education)])
-             (map (thresholder-by-key (keyword continue-education)))))))
+             (map (thresholder-by-key (keyword continue-education)))
+             (map (demapify (keyword continue-education)))))))
 
 (def teacher-score
   (memoize
     (fn [] (->> (my-read-dataset "data/surveys/2013/teacher_score.csv")
              (munge-survey-data)
              (project-by [(keyword feedback)])
-             (map (thresholder-by-key (keyword feedback)))))))
+             (map (thresholder-by-key (keyword feedback)))
+             (map (demapify (keyword feedback)))))))
 
 (def organizational-data
   (memoize
