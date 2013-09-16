@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<title>Education Data | Parallel Coordinates</title>
+<title>Brooklyn Education Data</title>
 <!--
 <link rel="stylesheet" type="text/css" href="FIXME" />
 <script type="text/javascript" src="FIXME"></script>
@@ -50,54 +50,58 @@
 <body>
 
     <div class="container">
-        <h1>NYC Public School Data</h1>
+        <h1>Brooklyn Public School Data</h1>
 
         <h2>Survey Questions</h2>
 
         <select id="selector">
-            <option value="feel-welcome">My child's school makes me feel welcome.</option>
-            <option value="helpful-feedback">School leaders give me regular and helpful feedback about my teaching.</option>
-            <option value="continue-education">Most of the teaching staff at my school expect me to continue my education after high school.</option>
         </select>
 
-        <div id="survey-questions"></div>
+        <div id="question-bar-chart"></div>
         <script type="text/javascript" src="js/barchart.js"></script>
     </div>
 
 <script type="text/javascript">
 
     var Data = {};
-
     function get_parent_score() {
-        $.get("json/parent-score.json", function(data) {
-            Data["feel-welcome"] = data;
+        return $.get("json/parent-score.json", function(data) {
+            _.extend(Data, data);
         })
     }
 
     function get_student_score() {
-        $.get("json/student-score.json", function(data) {
-            Data["continue-education"] = data;
+        return $.get("json/student-score.json", function(data) {
+            _.extend(Data, data);
         })
     }
 
     function get_teacher_score() {
-        $.get("json/teacher-score.json", function(data) {
-            Data["helpful-feedback"] = data;
+        return $.get("json/teacher-score.json", function(data) {
+            _.extend(Data, data);
         })
     }
 
     var $container = $('.container');
+    var bar_chart_el = document.getElementById('question-bar-chart');
+    $selector = $("#selector");
 
     $container.hide();
-    $.when(get_parent_score(), get_student_score(), get_teacher_score()).done(
-        $container.show()
-        );
+    $.when(get_parent_score(), get_student_score(), get_teacher_score())
+        .done(function(data) {
+                _.chain(Data)
+                .keys()
+                .each(function(k) {
+                    var option = $('<option>').text(k);
+                    $selector.append(option);
+                })
 
-    $selector = $("#selector");
-    var question_el = document.getElementById('survey-questions');
+                $container.show();
+            });
+
     $selector.change(function() {
-            question_el.innerHTML = "";         // reset
-            Barchart(Data[$selector.val()], question_el);
+            bar_chart_el.innerHTML = "";         // reset
+            Barchart(Data[$selector.val()], bar_chart_el);
     });
 
 </script>

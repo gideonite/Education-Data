@@ -19,6 +19,8 @@ var Barchart = function(data, el, params) {
     };
     params = _.extend(defaults, params);
 
+    // -- visualize --
+
     // margin conventions http://bl.ocks.org/mbostock/3019563
     var width = params.width - params.margin.left - params.margin.left;
     var height = params.height - params.margin.top - params.margin.bottom;

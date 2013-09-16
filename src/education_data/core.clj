@@ -102,7 +102,10 @@
   "
 
   (let [questions
-        (filter #(and (not= school-code %) (not= (keyword "School Type") %))
+        (filter #(and
+                   (not= school-code %)
+                   (not= (keyword "School Type") %)
+                   (not= (keyword "School Name") %))
                 (keys d))]
     (map #(hash-map
             :question %
@@ -117,7 +120,7 @@
       (standardize)
       (map breakup-question-map)
       (flatten)
-      )))
+      (group-by :question))))
 
 (defn demapify [k]
   (fn [d]
@@ -191,18 +194,12 @@
 (def student-score
   (memoize
     (fn [] (->> (my-read-dataset "data/surveys/2013/student_score.csv")
-             (munge-survey-data)
-             (project-by [(keyword continue-education)])
-             (map (thresholder-by-key (keyword continue-education)))
-             (map (demapify (keyword continue-education)))))))
+             (munge-survey-data)))))
 
 (def teacher-score
   (memoize
     (fn [] (->> (my-read-dataset "data/surveys/2013/teacher_score.csv")
-             (munge-survey-data)
-             (project-by [(keyword feedback)])
-             (map (thresholder-by-key (keyword feedback)))
-             (map (demapify (keyword feedback)))))))
+             (munge-survey-data)))))
 
 (def organizational-data
   (memoize
