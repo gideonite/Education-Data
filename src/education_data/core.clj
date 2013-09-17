@@ -89,13 +89,6 @@
     (>= n 2.5)          "Disagree"
     (>= n 0)            "Strongly Disagree"))
 
-;;(map-fn-over-groups #(update-in % [:value] threshold) (parent-score))
-
-(defn thresholder-by-key [k]
-  "takes a key and returns a function that thresholds that key"
-  (fn [d]
-   (assoc d k (threshold (k d)))))
-
 (defn breakup-question-map [d]
   "takes a data record d from a survey and returns a seq of hashmaps with keys
   {:question :value :SCHOOL-CODE} which corresponds to making each question key
@@ -140,14 +133,6 @@
       (group-by :question)
       (map-fn-over-groups strip-question)
       (map-fn-over-groups #(update-in % [:value] threshold)))))
-
-(defn demapify [k]
-  (fn [d]
-    (let [v (d k)]
-      (dissoc
-        (assoc d
-             :question (name k)
-             :value v) k))))
 
 ;; ----------------------------------------------
 ;; munge away
