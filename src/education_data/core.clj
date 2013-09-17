@@ -77,20 +77,24 @@
           (non-blank-column-names)
           (map #(vector (keyword %) (clean-survey-question %))))))
 
-(defn threshold-number [n]
+(defn threshold [n]
   "converts numbers from an average value for a survey question into the
   textual value"
   (cond
-    (=  n "N/A") "Does Not Apply"
-    (>= n 7.5)   "Strongly Agree"
-    (>= n 5)     "Agree"
-    (>= n 2.5)   "Disagree"
-    (>= n 0)     "Strongly Disagree"))
+    (=  n "N/A")        "Does Not Apply"
+    (=  n "Not Scored") "Not Scored"    ; identity
+    (=  n "")           "Not Scored"    ; TODO: what does `""` mean?
+    (>= n 7.5)          "Strongly Agree"
+    (>= n 5)            "Agree"
+    (>= n 2.5)          "Disagree"
+    (>= n 0)            "Strongly Disagree"))
+
+;;(map-fn-over-groups #(update-in % [:value] threshold) (parent-score))
 
 (defn thresholder-by-key [k]
   "takes a key and returns a function that thresholds that key"
   (fn [d]
-   (assoc d k (threshold-number (k d)))))
+   (assoc d k (threshold (k d)))))
 
 (defn breakup-question-map [d]
   "takes a data record d from a survey and returns a seq of hashmaps with keys
@@ -116,6 +120,16 @@
 (defn strip-question [d]
   (dissoc d :question))
 
+(defn map-fn-over-groups [f grps]
+  "maps the function `f` over the values of the map grps, for each key-value
+  pair returning {k (map f value)} since value is assumed to be a collection,
+  the result of a `group-by` operation
+  "
+
+  (->> grps
+    (map #(vector (first %) (map f (second %))))
+    (into {})))
+
 (defn munge-survey-data [survey-dataset]
   (let [old-new-colnames (clean-survey-questions (:column-names survey-dataset))]
     (->> (:rows survey-dataset)
@@ -124,9 +138,8 @@
       (map breakup-question-map)
       (flatten)
       (group-by :question)
-      (map #(vector (first %)  (map strip-question (second %))))
-      (into {})))
-  (println "done with munging surevey data"))
+      (map-fn-over-groups strip-question)
+      (map-fn-over-groups #(update-in % [:value] threshold)))))
 
 (defn demapify [k]
   (fn [d]
