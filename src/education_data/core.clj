@@ -113,6 +113,9 @@
             school-code (d school-code))
          questions)))
 
+(defn strip-question [d]
+  (dissoc d :question))
+
 (defn munge-survey-data [survey-dataset]
   (let [old-new-colnames (clean-survey-questions (:column-names survey-dataset))]
     (->> (:rows survey-dataset)
@@ -120,7 +123,10 @@
       (standardize)
       (map breakup-question-map)
       (flatten)
-      (group-by :question))))
+      (group-by :question)
+      (map #(vector (first %)  (map strip-question (second %))))
+      (into {})))
+  (println "done with munging surevey data"))
 
 (defn demapify [k]
   (fn [d]
