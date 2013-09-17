@@ -3,13 +3,14 @@ var Barchart = function(data, el, params) {
     // --- munge ---
     var bar_data = _.chain(data)
         .filter(function(d) {
-            return d.value !== "Does Not Apply";
+            return d.value !== "Does Not Apply"
+                && d.value !=="Not Scored";
         })
         .groupBy(function(d) {
             return d.value;
         })
         .map(function(val,key) {
-            return { question: key, count: val.length };
+            return { answer: key, count: val.length };
         })
         .value();
 
@@ -25,9 +26,9 @@ var Barchart = function(data, el, params) {
     var width = params.width - params.margin.left - params.margin.left;
     var height = params.height - params.margin.top - params.margin.bottom;
 
-    var question_answers = ["Strongly Agree", "Agree", "Disagree", "Strongly Disagree"];
+    var answers = ["Strongly Agree", "Agree", "Disagree", "Strongly Disagree"];
     var x = d3.scale.ordinal()
-        .domain(question_answers)
+        .domain(answers)
         .rangePoints([0, width], 1);
 
     var y = d3.scale.linear()
@@ -63,7 +64,7 @@ var Barchart = function(data, el, params) {
         .append('rect')
         .attr('width', xWidth / 2)
         .attr('height', function(d) { return height - y(d.count); })
-        .attr('x', function(d) { return x(d.question) - bar_offset; })
+        .attr('x', function(d) { return x(d.answer) - bar_offset; })
         .attr('y', function(d) { return y(d.count); })
         .attr('fill', 'steelblue')
         .on('mouseover', function() { d3.select(this).attr('opacity', 0.75) })
