@@ -65,7 +65,20 @@ function school_reports_2010_11() {
 
 function school_point_locations() {
     wget 'https://data.cityofnewyork.us/download/jfju-ynrr/application/zip'
-    mv -v zip data/school_point_locations.esri
+    mv -v zip data/school_point_locations.zip
+
+    # this is what you can do with it
+    #ogr2ogr \
+    #    -f GeoJSON \
+    #    # N.B. `-t_srs` to convert between coordinate systems, see http://stackoverflow.com/questions/16925131/shapefile-to-topojson-conversion-problems
+    #    -t_srs EPSG:4326 \
+    #    -select "ADDRESS, LOC_CODE, ZIP, FAX, SCHOOLNAME" \
+    #    school_locations.json Public_Schools_Points_2011-2012A.shp
+}
+
+function school_districts() {
+    wget 'http://www.nyc.gov/html/dcp/download/bytes/nysd_13a.zip'
+    mv -v nysd_13a.zip school_districts.zip
 }
 
 function school_safety_reports() {
