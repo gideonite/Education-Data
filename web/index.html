@@ -11,40 +11,18 @@
 </style>
 <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0-rc2/css/bootstrap-glyphicons.css" rel="stylesheet">
 -->
-<style type="text/css">
-
-    .brush .extent {
-        fill-opacity: .3;
-        stroke: #fff;
-        shape-rendering: crispEdges;
-    }
-
-    .background path {
-        fill: none;
-        stroke: #ccc;
-        stroke-opacity: .4;
-        shape-rendering: crispEdges;
-    }
-
-    .foreground path {
-        fill: none;
-        stroke: steelblue;
-        stroke-opacity: .7;
-    }
-
-    .axis line, .axis path {
-        fill: none;
-        stroke: #000;
-        shape-rendering: crispEdges;
-    }
-</style>
+<link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/qtip2/2.1.1/basic/jquery.qtip.min.css" />
 
 <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0-rc2/css/bootstrap.min.css" rel="stylesheet">
 <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0-rc2/js/bootstrap.min.js"></script>
 
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/d3/3.2.2/d3.v3.min.js"></script>
+<script src="http://d3js.org/topojson.v1.min.js"></script>
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.1/underscore-min.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/qtip2/2.1.1/jquery.qtip.min.js"></script>
+
 <script type="text/javascript" src="js/parallel-coordinates.js"></script>
 </head>
 <body>
@@ -57,37 +35,80 @@
         <select id="selector">
         </select>
 
-        <div id="question-bar-chart"></div>
+        <table>
+            <tr>
+                <td>
+                    <div id="question-bar-chart"></div>
+                </td>
+                <td>
+                    <span id="map"></span>
+                </td>
+            </tr>
+        </table>
         <script type="text/javascript" src="js/barchart.js"></script>
+        <script type="text/javascript" src="js/schoolmap.js"></script>
     </div>
 
 <script type="text/javascript">
 
     var Data = {};
+    var map;
+    var orgs;
     function get_parent_score() {
         return $.get("json/parent-score.json", function(data) {
             _.extend(Data, data);
-        })
+        });
     }
 
     function get_student_score() {
         return $.get("json/student-score.json", function(data) {
             _.extend(Data, data);
-        })
+        });
     }
 
     function get_teacher_score() {
         return $.get("json/teacher-score.json", function(data) {
             _.extend(Data, data);
-        })
+        });
+    }
+
+    function get_geo_school() {
+        return $.get("json/geo-school.json", function(data) {
+            map = schoolmap(data, document.getElementById('map'));
+        });
+    }
+
+    function get_orgs() {
+        return $.get("json/organizational-data-bklyn.json", function(data) {
+                orgs = _.chain(data)
+                    .groupBy(function(d) { return d["SCHOOL CODE"]; })
+                    .map(function(group, key) {
+                        if (group.length !== 1) {
+                            throw new Error("");
+                        }
+                        return [key, group[0]];
+                    })
+                    .object()
+                    .value()
+                    ;
+        });
     }
 
     var $container = $('.container');
     var bar_chart_el = document.getElementById('question-bar-chart');
+
+    Barchart.dummy_svg(bar_chart_el);
+
     $selector = $("#selector");
 
     $container.hide();
-    $.when(get_parent_score(), get_student_score(), get_teacher_score())
+    $.when(
+        //get_parent_score(),
+        //get_student_score(),
+        get_geo_school(),
+        get_orgs(),
+        get_teacher_score()
+        )
         .done(function(data) {
                 _.chain(Data)
                 .keys()
@@ -97,11 +118,30 @@
                 })
 
                 $container.show();
+
+                map.qtip(orgs);
             });
 
     $selector.change(function() {
             bar_chart_el.innerHTML = "";         // reset
-            Barchart(Data[$selector.val()], bar_chart_el);
+
+            var on = {
+                click: function(school_list, that) {
+                    var d3that = d3.select(that);
+                    var selected = d3that.attr('selected');
+                    selected = selected === 'true';     // string -> bool
+
+                    if (selected) {
+                        map.hide_all();
+                    } else {
+                        map.show_school_list(school_list);
+                    }
+
+                    d3that.attr('selected', !selected);
+                }
+            };
+
+            Barchart(Data[$selector.val()], bar_chart_el, {on: on});
     });
 
 </script>

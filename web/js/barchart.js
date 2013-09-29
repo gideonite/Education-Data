@@ -39,7 +39,7 @@ var Barchart = function(data, el, params) {
         .attr('width', params.width)
         .attr('height', params.height)
         .append('g')
-        .attr('transform', 'translate(' + params.margin.left + ',' + params.margin.top + ')');
+        .attr('transform','translate(' + params.margin.left + ',' + params.margin.top + ')');
 
     var xAxis = d3.svg.axis()
     .scale(x)
@@ -69,6 +69,44 @@ var Barchart = function(data, el, params) {
         .attr('fill', 'steelblue')
         .on('mouseover', function() { d3.select(this).attr('opacity', 0.75) })
         .on('mouseout', function() { d3.select(this).attr('opacity', 1) })
-        ;
+        .on('click', function() {
+            var d3this = d3.select(this);
+            var selected = d3this.attr('selected');
+            selected = (selected === 'true');     // NB bad code duplication
+            console.log(selected);
+            if (selected) {
+                d3this.attr('fill', 'black')
+            } else {
+                d3this.attr('fill', 'steelblue')
+            }
+        })
+    ;
 
+    function bind_on_fn(on, fn) {
+        rect.on(on, function(datum) {
+            var answer = datum.answer;
+            var datas = data.filter(function(d) {
+                return d.value === answer;
+            });
+
+            fn(datas, this)
+        });
+    }
+
+    _.each(params.on, function(fn, on) {
+        bind_on_fn(on ,fn);
+    });
 };
+
+// monkey patch
+Barchart.dummy_svg = function(dom_el, params) {
+    var defaults = { margin: {top: 20, right: 10, bottom: 25, left: 24},
+        width: 500,
+        height: 500
+    };
+    params = _.extend(defaults, params);
+
+    d3.select(dom_el).append('svg')
+        .attr('width', params.width)
+        .attr('height', params.height);
+}
